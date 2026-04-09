@@ -7,8 +7,8 @@ use module_lib.module_pkg.all;
 entity memory_select_logic is
     generic(
         g_number_of_bank        : integer := c_number_of_bank ;
-        g_initial_bank_addr     : std_logic_vector(7 downto 0) := (others => '0');
-        g_initial_page_addr     : std_logic_vector(7 downto 0) := (others => '0')
+        g_initial_bank_addr     : std_logic_vector(7 downto 0) := c_initial_bank_addr;
+        g_initial_page_addr     : std_logic_vector(7 downto 0) := c_initial_page_addr
     );
     port(
         clk         : in    std_logic;
@@ -38,7 +38,6 @@ end entity memory_select_logic;
 
 architecture rtl of memory_select_logic is
     type t_axi_state is (idle, rd_state, wr_state, wait_rd_req, wait_wr_req);
-
     signal state                    : t_axi_state := idle;
     signal shadow_bank_addr         : std_logic_vector(7 downto 0);
     signal shadow_page_addr         : std_logic_vector(7 downto 0);

@@ -41,11 +41,13 @@ begin
     page_addr_int <= to_integer(unsigned(page_addr));
     addr_int <= to_integer(unsigned(addr_in));
 
-    process
+    process (clk)
     begin
         if rising_edge(clk) then
             if rst = '1' then
-            
+                state <= idle;
+                rd_ready <= '0';
+                wr_ready <= '0';
             else
                 case state is
                     when idle =>

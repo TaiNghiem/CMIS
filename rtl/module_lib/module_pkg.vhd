@@ -3,19 +3,25 @@ use ieee.std_logic_1164.all;
 use IEEE.numeric_std.all;
 
 package module_pkg is
+    constant c_SDA_hold_time        : time := 100 ns;
     constant c_number_of_bank       : integer := 4;
-    
+    constant c_initial_bank_addr    : std_logic_vector(7 downto 0) := (others => '0');
+    constant c_initial_page_addr    : std_logic_vector(7 downto 0) := (others => '0');
+    constant c_module_freq_hz       : integer := 100_000_000;
+
     type t_page is array(0 to 127) of std_logic_vector(7 downto 0);
     type t_bank is array(0 to 255) of t_page;
     type t_mem is array(0 to c_number_of_bank-1) of t_bank;
 
     function f_init_mem_test return t_mem;
+    function f_init_lower_mem_test return t_page;
 
     constant c_init_mem             : t_mem;
     constant c_init_lower_mem       : t_page;
 end package;
 
 package body module_pkg is
+
     function f_init_mem_test return t_mem is
         variable v_mem : t_mem;
     begin
@@ -39,5 +45,5 @@ package body module_pkg is
     end function;
 
     constant c_init_mem             : t_mem := f_init_mem_test;
-    constant c_init_lower_mem       : t_page := f_init_lower_mem_test;
+    constant c_init_lower_mem       : t_page := f_init_lower_mem_test; 
 end package body;

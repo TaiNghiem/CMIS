@@ -1,0 +1,3 @@
+sim/*
+!sim/sim.do
+!sim/create_projects.do
