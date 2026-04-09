@@ -111,7 +111,7 @@ begin
         rst <= '0';
         wait;
     end process;
-    
+
     test: process
     begin
         -- report "Time: " & time'image(now) & " - Starting I2C master quick command test";
@@ -119,7 +119,7 @@ begin
         wait for 100 ns;
         i2c_master_quick_command(unsigned(c_target_control_code), i2c_if, "Pinging I2C slave, expecting ACK", true);
         wait for 10 us;
-
+            
         std.env.stop;
     end process;
 
