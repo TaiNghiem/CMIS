@@ -16,7 +16,7 @@ architecture tb of gernerated_tb is
     component module_top
         generic(
             g_SDA_hold_time         : time := c_SDA_hold_time;
-            g_module_freq_hz        : integer := c_module_freq_hz
+            g_module_freq_hz        : real := c_module_freq_hz
         );
         port(
             clk         : in    std_logic;
@@ -27,7 +27,7 @@ architecture tb of gernerated_tb is
     end component module_top;
     
     constant C_CLK_PERIOD       : time := 10 ns;
-    constant C_I2C_FREQ_HZ      : integer := 100_000;
+    constant C_I2C_FREQ_HZ      : real := 100_000.0;
     constant C_I2C_SLAVE_ADDR   : std_logic_vector(6 downto 0) := "1010000";
     constant C_I2C_REG_ADDR     : std_logic_vector(7 downto 0) := x"10";
     constant C_I2C_EXPECTED_DATA: std_logic_vector(7 downto 0) := x"55";

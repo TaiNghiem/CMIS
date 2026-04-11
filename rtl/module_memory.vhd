@@ -51,12 +51,14 @@ begin
             else
                 case state is
                     when idle =>
-                        if rd_valid = '1' then
-                            rd_ready <= '0';
-                            state <= rd_state;
-                        elsif wr_valid = '1' then
+                        rd_ready <= '1';
+                        wr_ready <= '1';
+                        if wr_valid = '1' then
                             wr_ready <= '0';
                             state <= wr_state;
+                        elsif rd_valid = '1' then
+                            rd_ready <= '0';
+                            state <= rd_state;
                         end if;
 
                     when rd_state =>
@@ -65,7 +67,6 @@ begin
                         else
                             mem_rd_data <= module_memory(bank_addr_int)(page_addr_int)(addr_int-128);
                         end if;
-                        rd_ready <= '1';
                         state <= idle;
 
                     when wr_state =>
@@ -74,7 +75,6 @@ begin
                         else
                             module_memory(bank_addr_int)(page_addr_int)(addr_int-128) <= mem_wr_data;
                         end if;
-                        wr_ready <= '1';
                         state <= idle;
                     when others =>
                         state <= idle;

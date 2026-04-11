@@ -7,7 +7,7 @@ use module_lib.module_pkg.all;
 entity I2C_target is
     generic(
         g_SDA_hold_time         : time := c_SDA_hold_time;
-        g_module_freq_hz        : integer := c_module_freq_hz
+        g_module_freq_hz        : real := c_module_freq_hz
     );
     port(
         clk         : in    std_logic;
@@ -30,7 +30,7 @@ end entity I2C_target;
 
 architecture rtl of I2C_target is
 
-    constant c_sda_hold_cycle   : integer := (g_SDA_hold_time / 1 sec) * g_module_freq_hz;
+    constant c_sda_hold_cycle   : integer := integer(real(g_SDA_hold_time / 1 ns) / (real(1_000_000_000) / g_module_freq_hz));
 
 
     type t_target_state is (idle, get_first_byte,
@@ -68,7 +68,7 @@ architecture rtl of I2C_target is
 
     signal illegal_SDA_edge : std_logic;
 
-    signal current_addr     : std_logic_vector(7 downto 0) := "10100000";
+    signal current_addr     : std_logic_vector(7 downto 0) := b"1010_0000";
     signal value_reg        : std_logic_vector(7 downto 0);
 
     signal STOP_illegal     : std_logic;
@@ -81,6 +81,8 @@ architecture rtl of I2C_target is
 
     signal SCL_stretch      : std_logic;
     signal ACK_received     : std_logic;
+
+    signal START_transaction : std_logic := '0';
 
     --debounce?
 
@@ -136,6 +138,8 @@ begin
                 state <= idle;
                 SCL_out <= 'Z';
                 SDA_out <= 'Z';
+                current_addr <= b"1010_0000";
+                START_transaction <= '0';
             else
                 case state is
                     when idle =>
@@ -150,12 +154,20 @@ begin
                         START_illegal <= '0';
                         read_req <= '0';
                         write_req <= '0';
+                        address <= current_addr;
+                        incr_addr <= '0';
                         
-                        if START_detect = '1' then
-                            state <= get_first_byte;
-                        elsif START_repeat = '1' then
-                            state <= get_first_byte;
-                            START_repeat <= '0';
+                        if START_detect = '1' or START_repeat = '1' then
+                            START_transaction <= '1';
+                        elsif STOP_detect = '1' then
+                            START_transaction <= '0';
+                        end if;
+                        
+                        if START_transaction = '1' and SDA_reg = '0' then
+                            if SCL_falling_edge = '1' then
+                                state <= get_first_byte;
+                                START_repeat <= '0';
+                            end if;
                         end if;
                     
                     --during transaction, state only change at scl falling edge
@@ -193,6 +205,7 @@ begin
                             STOP_illegal <= STOP_detect;
                         elsif STOP_legal = '1' or START_legal = '1' then
                             state <= idle;
+                            illegal_SDA_edge <= '0';
                             START_repeat <= START_legal;
                         elsif late_SCL = '1' then
                             START_illegal <= '0';
@@ -204,6 +217,8 @@ begin
                     when send_ACK =>
                         if send_NACK = '1' then
                             SDA_out <= 'Z';
+                            state <= idle;
+                            write_req <= '0';
                         else
                             SDA_out <= '0';
                             if SCL_falling_edge = '1' then
@@ -225,6 +240,7 @@ begin
                             STOP_illegal <= STOP_detect;
                         elsif STOP_legal = '1' or START_legal = '1' then
                             state <= idle;
+                            illegal_SDA_edge <= '0';
                             START_repeat <= START_legal;
                         end if;
                     
@@ -249,9 +265,10 @@ begin
 
                     
                     when send_byte => 
-                        if SCL_stretch = '1' then
+                        if bit_count = 0 then
                             SDA_out <= byte_out(7);             --load first read bit before release scl
                             bit_count <= 1;
+                        elsif SCL_stretch = '1' then
                             if wait_timer < 4 then
                                 wait_timer <= wait_timer + 1;
                             else
@@ -266,15 +283,18 @@ begin
                             end if;
                         end if;
 
-                        if SCL_falling_edge = '1' and bit_count = 8 then
-                            state <= receive_ACK;
-                            bit_count <= 0;
-                            SDA_out <= 'Z';
-                            incr_addr <= '1';
-                            read_req <= '1';
-                            START_illegal <= '0';
-                            STOP_illegal <= '0';
-                            illegal_SDA_edge <= '0';
+                        if bit_count = 8 then
+                            address <= std_logic_vector(unsigned(current_addr) + 1);
+                            if SCL_falling_edge = '1'then
+                                state <= receive_ACK;
+                                bit_count <= 0;
+                                SDA_out <= 'Z';
+                                incr_addr <= '1';
+                                read_req <= '1';
+                                START_illegal <= '0';
+                                STOP_illegal <= '0';
+                                illegal_SDA_edge <= '0';
+                            end if;
                         end if;
 
                         if START_detect = '1' or STOP_detect = '1' then
@@ -283,6 +303,7 @@ begin
                             STOP_illegal <= STOP_detect;
                         elsif STOP_legal = '1' or START_legal = '1' then
                             state <= idle;
+                            illegal_SDA_edge <= '0';
                             START_repeat <= START_legal;
                         elsif late_SCL = '1' then
                             START_illegal <= '0';
@@ -310,6 +331,7 @@ begin
                             if get_value_byte = '0' then
                                 get_value_byte <= '1';
                                 current_addr <= byte_reg(7 downto 0);
+                                address <= byte_reg(7 downto 0);
                             elsif get_value_byte = '1' then
                                 incr_addr <= '1';                           --addr incr after ACK
                                 value_reg <= byte_reg;
@@ -326,6 +348,7 @@ begin
                             STOP_illegal <= STOP_detect;
                         elsif STOP_legal = '1' or START_legal = '1' then
                             state <= idle;
+                            illegal_SDA_edge <= '0';
                             START_repeat <= START_legal;
                         elsif late_SCL = '1' then
                             START_illegal <= '0';
@@ -336,9 +359,9 @@ begin
                     
                     when receive_ACK =>
                         if SCL_rising_edge = '1' then
-                            if SDA_reg <= '1' then
+                            if SDA_reg = '1' then
                                 state <= idle;
-                            elsif SDA_reg <= '0' then
+                            elsif SDA_reg = '0' then
                                 ACK_received <= '1';
                             end if;
                         end if;
@@ -359,6 +382,7 @@ begin
                             STOP_illegal <= STOP_detect;
                         elsif STOP_legal = '1' or START_legal = '1' then
                             state <= idle;
+                            illegal_SDA_edge <= '0';
                             START_repeat <= START_legal;
                         elsif late_SCL = '1' then
                             START_illegal <= '0';
@@ -392,7 +416,7 @@ begin
                     else
                         if STOP_illegal = '1' then
                             STOP_legal <= '1';
-                        elsif START_legal = '1' then
+                        elsif START_illegal = '1' then
                             START_legal <= '1';
                         end if;
                     end if;
@@ -407,7 +431,6 @@ begin
         end if;
     end process;
     
-    address <= current_addr;
     op_done <= read_done and write_done;
     write_data <= value_reg;
     byte_out <= read_data;

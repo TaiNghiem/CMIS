@@ -57,58 +57,61 @@ begin
                 shadow_page_addr <= g_initial_page_addr;
                 read_done <= '1';
                 write_done <= '1';
-            elsif read_req = '1' then
+            else
                 case state is
                     when idle =>
                         if read_req = '1' then
                             state <= rd_state;
-                            rd_valid <= '1';
                             read_done <= '0';
                         elsif write_req = '1' then
                             state <= wr_state;
-                            wr_valid <= '1';
                             write_done <= '1';
                         end if;
                     
                     when rd_state =>
+                        rd_valid <= '1';
                         if rd_ready = '1' then
-                            rd_valid <= '1';
                             state <= wait_rd_req;
                         end if;
                     
                     when wr_state =>
-                        if addr_in = x"EF" and
+                        if addr_in = x"7E" and
                         to_integer(unsigned(write_data)) > g_number_of_bank-1 then
                             state <= wait_wr_req;
                             send_NACK <= '1';   
-                        elsif wr_ready <= '1' then
+                        else
                             wr_valid <= '1';
-                            state <= wait_wr_req;
-                            mem_wr_data <= write_data;
+                            if wr_ready <= '1' then
+                                wr_valid <= '1';
+                                state <= wait_wr_req;
+                                mem_wr_data <= write_data;
+                            end if;
                         end if;
                     
                     when wait_rd_req =>
+                        rd_valid <= '0';
                         if rd_ready = '1' then
                             read_done <= '1';
                             read_data <= mem_rd_data;
                             if read_req = '0' then
                                 state <= idle;
-                                if addr_in = x"EF" then
+                                if addr_in = x"7E" then
                                     shadow_bank_addr <= mem_rd_data;
-                                elsif addr_in = x"FF" then
+                                elsif addr_in = x"7F" then
                                     shadow_page_addr <= mem_rd_data;
                                 end if;
                             end if;
                         end if;
                     
                     when wait_wr_req =>
+                        wr_valid <= '0';
                         if wr_ready = '1' then
                             write_done <= '1';
                             if write_req = '0' then
                                 state <= idle;
-                                if addr_in = x"EF" then
+                                if addr_in = x"7E" then
                                     shadow_bank_addr <= write_data;
-                                elsif addr_in = x"FF" then
+                                elsif addr_in = x"7F" then
                                     shadow_page_addr <= write_data;
                                 end if;
                             end if;

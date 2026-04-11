@@ -7,7 +7,7 @@ use module_lib.module_pkg.all;
 entity module_top is
     generic(
         g_SDA_hold_time         : time := c_SDA_hold_time;
-        g_module_freq_hz        : integer := c_module_freq_hz
+        g_module_freq_hz        : real := c_module_freq_hz
     );
     port(
         clk         : in    std_logic;
@@ -41,8 +41,8 @@ architecture rtl of module_top is
 
     component i2c_target
         generic (
-            g_SDA_hold_time : time := 100 ns;
-            g_module_freq_hz : integer := 100_000_000
+            g_SDA_hold_time     : time := 100 ns;
+            g_module_freq_hz    : real := 100_000_000.0
         );
         port (
             clk      : in std_logic;

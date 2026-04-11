@@ -14,40 +14,59 @@ vcom $vhdl_std -work work ../testbench/module_I2C_tb.vhd
 
 vsim -voptargs="+acc" work.module_i2c_tb
 
-add wave -position insertpoint  \
-sim:/module_i2c_tb/clk \
-sim:/module_i2c_tb/rst \
-sim:/module_i2c_tb/SCL \
-sim:/module_i2c_tb/SDA \
-sim:/module_i2c_tb/i2c_if
+add wave -group "constant" \
+sim:/module_i2c_tb/DUT/i2c_target_inst/c_sda_hold_cycle
 
-add wave -position insertpoint -group "I2C_target" \
-sim:/module_i2c_tb/DUT/i2c_target_inst/state \
-sim:/module_i2c_tb/DUT/i2c_target_inst/SCL_reg \
-sim:/module_i2c_tb/DUT/i2c_target_inst/SDA_reg \
-sim:/module_i2c_tb/DUT/i2c_target_inst/SCL \
-sim:/module_i2c_tb/DUT/i2c_target_inst/SDA \
-sim:/module_i2c_tb/DUT/i2c_target_inst/SCL_out \
-sim:/module_i2c_tb/DUT/i2c_target_inst/SDA_out
+add wave rst clk i2c_if
 
-add wave -position insertpoint -group "START_STOP" \
-sim:/module_i2c_tb/DUT/i2c_target_inst/START_detect \
-sim:/module_i2c_tb/DUT/i2c_target_inst/STOP_detect \
-sim:/module_i2c_tb/DUT/i2c_target_inst/illegal_SDA_edge \
-sim:/module_i2c_tb/DUT/i2c_target_inst/STOP_illegal \
-sim:/module_i2c_tb/DUT/i2c_target_inst/START_illegal \
-sim:/module_i2c_tb/DUT/i2c_target_inst/STOP_legal \
-sim:/module_i2c_tb/DUT/i2c_target_inst/START_legal
+# env module_i2c_tb/test/
+# add wave -group "process_debug" received_data(0) received_data(1) received_data(2) received_data(3)
+
+add wave -divider
+env module_i2c_tb/DUT/i2c_target_inst/
+
+add wave -group "I2C_target" \
+    state address
+add wave -group "I2C_target" \
+    -group "Debug" SCL SDA SCL_out SDA_out SCL_reg SDA_reg
+
+add wave -group "Byte_Reg" \
+    byte_reg current_addr value_reg byte_out
+
+add wave -divider
+
+add wave -group "START_STOP" \
+    START_detect STOP_detect
+add wave -group "START_STOP" \
+    -group "Debug" illegal_SDA_edge STOP_illegal START_illegal START_legal STOP_legal START_repeat
+
+add wave -group "Counter" \
+    wait_timer hold_timer
+
+add wave -divider
+
+env module_i2c_tb/DUT/memory_select_logic_inst/
+
+add wave -group "Mem_sel" \
+    state
+add wave -group "Mem_sel" -group "Read" \
+    read_* rd_*
+add wave -group "Mem_sel" -group "Write" \
+    write_* wr_* send_NACK
 
 # large object only view when needed
-# add wave -position insertpoint  -group "memory"\
-# sim:/module_i2c_tb/DUT/module_memory_inst/lower_mem \
-# sim:/module_i2c_tb/DUT/module_memory_inst/module_memory
+# env module_i2c_tb/DUT/module_memory_inst/
+# add wave -group "memory" \
+#     lower_mem
+#     module_memory
 
 run -all
 
-see 0
+property wave -radix hex *
+configure wave -gridperiod 50ns -timelineunits ns
 view wave
+seetime wave 0
+
 # windowfloat wave
 # Optional: move it to a specific spot (WidthxHeight+Xoffset+Yoffset)
 # windowgeom wave -geometry 1200x800+1920+0
