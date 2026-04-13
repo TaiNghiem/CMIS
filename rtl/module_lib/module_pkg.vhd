@@ -16,7 +16,8 @@ package module_pkg is
     function f_init_upper_page_test return t_page;
     function f_init_upper_mem_test return t_mem;
     function f_init_lower_mem_test(
-        init_bank_addr : std_logic_vector(7 downto 0)
+        init_bank_addr : std_logic_vector(7 downto 0);
+        init_page_addr : std_logic_vector(7 downto 0)
     ) return t_page;
 
     constant c_init_mem             : t_mem;
@@ -49,13 +50,16 @@ package body module_pkg is
     end function;
 
     function f_init_lower_mem_test(
-        init_bank_addr : std_logic_vector(7 downto 0)
+        init_bank_addr  : std_logic_vector(7 downto 0);
+        init_page_addr  : std_logic_vector(7 downto 0)
     ) return t_page is
         variable v_lower_mem : t_page;
     begin
         for addr in 0 to 127 loop
             if addr = 126 then
                 v_lower_mem(addr) := init_bank_addr;
+            elsif addr = 127 then
+                v_lower_mem(addr) := init_page_addr;
             else
                 v_lower_mem(addr) := std_logic_vector(to_unsigned(addr, 8));
             end if;
@@ -64,5 +68,5 @@ package body module_pkg is
     end function;
 
     constant c_init_mem             : t_mem := f_init_upper_mem_test;
-    constant c_init_lower_mem       : t_page := f_init_lower_mem_test(c_initial_bank_addr); 
+    constant c_init_lower_mem       : t_page := f_init_lower_mem_test(c_initial_bank_addr, c_initial_page_addr); 
 end package body;

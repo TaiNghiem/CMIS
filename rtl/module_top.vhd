@@ -1,7 +1,8 @@
 library IEEE;
-library module_lib;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
+
+library module_lib;
 use module_lib.module_pkg.all;
 
 entity module_top is
@@ -58,7 +59,8 @@ architecture rtl of module_top is
 
             read_done   : in std_logic;
             write_done  : in std_logic;
-            send_NACK   : in std_logic
+            send_NACK   : in std_logic;
+            offset_NACK : in std_logic
         );
     end component;
 
@@ -124,14 +126,15 @@ begin
             SCL => SCL,
             SDA => SDA,
 
-            read_req => read_req,
-            write_req => write_req,
-            address => address,
-            write_data => write_data,
-            read_data => read_data,
-            read_done => read_done,
-            write_done => write_done,
-            send_NACK => send_NACK
+            read_req    => read_req,
+            write_req   => write_req,
+            address     => address,
+            write_data  => write_data,
+            read_data   => read_data,
+            read_done   => read_done,
+            write_done  => write_done,
+            send_NACK   => send_NACK,
+            offset_NACK => '0'
         );
     
     memory_select_logic_inst : memory_select_logic
@@ -144,22 +147,22 @@ begin
             clk => clk,
             rst => rst,
 
-            read_req => read_req,
-            write_req => write_req,
-            addr_in => address,
-            write_data => write_data,
-            read_data => read_data,
-            read_done => read_done,
-            write_done => write_done,
-            send_NACK => send_NACK,
+            read_req    => read_req,
+            write_req   => write_req,
+            addr_in     => address,
+            write_data  => write_data,
+            read_data   => read_data,
+            read_done   => read_done,
+            write_done  => write_done,
+            send_NACK   => send_NACK,
 
-            rd_valid => rd_valid,
-            rd_ready => rd_ready,
-            wr_valid => wr_valid,
-            wr_ready => wr_ready,
-            bank_addr => bank_addr,
-            page_addr => page_addr,
-            addr_out => addr_out,
+            rd_valid    => rd_valid,
+            rd_ready    => rd_ready,
+            wr_valid    => wr_valid,
+            wr_ready    => wr_ready,
+            bank_addr   => bank_addr,
+            page_addr   => page_addr,
+            addr_out    => addr_out,
             mem_rd_data => mem_rd_data,
             mem_wr_data => mem_wr_data
         );

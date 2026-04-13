@@ -17,12 +17,16 @@ vlib work
 vmap work work
 vlib module_lib
 vmap module_lib module_lib
+vlib sim_lib
+vmap sim_lib sim_lib
 
 # 3. Compile Source Files
 # List your files in dependency order (Packages -> RTL -> TB)
 # puts "--- Compiling RTL and Packages ---"
 vcom $vhdl_std -work module_lib ../rtl/module_lib/*.vhd
+vcom $vhdl_std -work sim_lib ../testbench/sim_lib/*.vhd
 vcom $vhdl_std -work work ../rtl/*.vhd
+
 
 
 # puts "--- Compiling Testbench ---"

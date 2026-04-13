@@ -9,6 +9,7 @@
 set vhdl_std        "-2008"
 
 vcom $vhdl_std -work module_lib ../rtl/module_lib/*.vhd
+vcom $vhdl_std -work sim_lib ../testbench/sim_lib/*.vhd
 vcom $vhdl_std -work work ../rtl/*.vhd
 vcom $vhdl_std -work work ../testbench/module_I2C_tb.vhd
 
@@ -19,8 +20,9 @@ sim:/module_i2c_tb/DUT/i2c_target_inst/c_sda_hold_cycle
 
 add wave rst clk i2c_if
 
-# env module_i2c_tb/test/
-# add wave -group "process_debug" received_data(0) received_data(1) received_data(2) received_data(3)
+env module_i2c_tb/test/
+add wave -group "process_debug" \
+    lower_mem_reg(126) lower_mem_reg(127) bank_value page_value
 
 add wave -divider
 env module_i2c_tb/DUT/i2c_target_inst/
@@ -28,10 +30,10 @@ env module_i2c_tb/DUT/i2c_target_inst/
 add wave -group "I2C_target" \
     state address
 add wave -group "I2C_target" \
-    -group "Debug" SCL SDA SCL_out SDA_out SCL_reg SDA_reg
+    -group "Debug" SCL_out SDA_out SCL_reg SDA_reg read_trans write_trans
 
 add wave -group "Byte_Reg" \
-    byte_reg current_addr value_reg byte_out
+    byte_reg current_addr byte_out bit_count
 
 add wave -divider
 
@@ -53,12 +55,14 @@ add wave -group "Mem_sel" -group "Read" \
     read_* rd_*
 add wave -group "Mem_sel" -group "Write" \
     write_* wr_* send_NACK
+add wave -group "Mem_sel" -group "Debug" \
+    bank_addr page_addr \
+    shadow_bank_addr shadow_page_addr
 
 # large object only view when needed
-# env module_i2c_tb/DUT/module_memory_inst/
-# add wave -group "memory" \
-#     lower_mem
-#     module_memory
+env module_i2c_tb/DUT/module_memory_inst/
+add wave -group "memory" \
+    lower_mem(126) lower_mem(127) \
 
 run -all
 
