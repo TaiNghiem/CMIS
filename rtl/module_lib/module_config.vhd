@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 package module_config is
+    type t_register_map is array (natural range<>) of std_logic_vector(7 downto 0);
     
     constant c_number_of_bank           : integer := 4;
     constant c_number_of_lane           : integer := 32;
@@ -53,7 +54,23 @@ package module_config is
     constant c_lm3c_SFF8024ModuleSubtype    : std_logic_vector(7 downto 0) := b"XXXX_0000";
     constant c_lm3c_SFF8024FiberFaceType    : std_logic_vector(7 downto 0) := b"XXXX_XX00";
     constant c_lm3c_LowPowerRestrictions    : std_logic_vector(7 downto 0) := b"0XXX_0000";
-    constant 
+    
+    constant c_lm55_MediaType               : std_logic_vector(7 downto 0) := x"00";
+
+    constant c_lm56_HostInterfaceIDApp1         : std_logic_vector(7 downto 0) := x"00";
+    constant c_lm57_MediaInterfaceIDApp1        : std_logic_vector(7 downto 0) := x"00";
+    constant c_lm58_LaneCount1                  : std_logic_vector(7 downto 0) := b"1111_1111";
+    constant c_lm59_HostLaneAssignmentOptions   : std_logic_vector(7 downto 0) := b"0000_0000";
+
+    constant c_lm6a_HostInterfaceIDApp1         : std_logic_vector(7 downto 0) := x"00";
+    constant c_lm6b_MediaInterfaceIDApp1        : std_logic_vector(7 downto 0) := x"00";
+    constant c_lm6c_LaneCount1                  : std_logic_vector(7 downto 0) := b"1111_1111";
+    constant c_lm6d_HostLaneAssignmentOptions   : std_logic_vector(7 downto 0) := b"0000_0000";
+
+    constant c_lm0e_BankSelect          : std_logic_vector(7 downto 0) := x"00";
+    constant c_lm0f_PageSelect          : std_logic_vector(7 downto 0) := x"00";
+
+    
 
     -- ============================================================================
     -- CMIS OPTIONAL PAGE FEATURE TOGGLEs

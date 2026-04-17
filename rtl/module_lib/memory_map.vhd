@@ -11,6 +11,7 @@ package memory_map is
 end package;
 
 package body memory_map is
+
     constant c_1a1b_page_mask       : t_page_map(0 to 255)(26 to 27) := (
         others => (others => '0')
     );
@@ -55,7 +56,7 @@ package body memory_map is
         return pm;
     end function;
 
-    constant c_supported_page_mask  : t_page_map := gen_page_map when c_lm02_mem_model = '1';
+    constant c_supported_page_mask  : t_page_map := gen_page_map;
 
 
 end package body;
