@@ -1,13 +1,13 @@
-library IEEE;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
 library module_lib;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
-use module_lib.module_pkg.all;
+context module_lib.module_context;
 
 entity I2C_target is
     generic(
-        g_SDA_hold_time         : time := c_SDA_hold_time;
-        g_module_freq_hz        : real := c_module_freq_hz
+        
     );
     port(
         clk         : in    std_logic;

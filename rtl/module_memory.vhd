@@ -1,8 +1,9 @@
-library IEEE;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
 library module_lib;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
-use module_lib.module_pkg.all;
+context module_lib.module_context;
 
 entity module_memory is
     -- generic(
